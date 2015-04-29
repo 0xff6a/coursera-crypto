@@ -107,11 +107,11 @@ ascii_xor_res.each do |xor_res|
 end 
 
 # Guess the key
-key_guess = Hex.bitwise_xor(Ascii.to_hex(guess), target)
+key = Hex.bitwise_xor(Ascii.to_hex(guess), target)
 
 # Try and use the key on all the other ciphertests
 puts '[+] Initial Guesses'
-puts rebased_cts.map.with_index { |ct, i| "[#{i}] #{Hex.to_ascii(Hex.bitwise_xor(key_guess, ct))}" }
+puts rebased_cts.map.with_index { |ct, i| "[#{i}] #{Hex.to_ascii(Hex.bitwise_xor(key, ct))}" }
 puts '[+] End'
 #
 # [+] Initial Guesses
@@ -126,34 +126,37 @@ puts '[+] End'
 # [8] 8  privfte-key   encr:pi~n sc`e}e6 tates 3 algor thms  namely a procedure for gene
 # [9] YT`e Coicise OqfordDi toary  2 0 z deﬁnes cry9to a the art of  writing o r sol
 
-# Guess ciphertext_6
-plaintext_6 =
-#-hmre aue two }ypes o% rhptogza`hos- that which >ill geep secrets safe from your l
-'There are two types of cryptography - that which will keep secrets safe from your l'
+#
+# Crib dragging
+#
+loop do
+  puts '[+] Choose a ciphertext id to guess:'
+  id = gets.chomp
 
-# Guess the key again
-key_guess = Hex.bitwise_xor(Ascii.to_hex(plaintext_6), ciphertext_6)
+  puts '[+] Input your guess:'
+  guess = gets.chomp
 
-# Print all the cipher texts again
-puts '[+] Guesses based off ciphertext_6'
-puts rebased_cts.map.with_index { |ct, i| "[#{i}] #{Hex.to_ascii(Hex.bitwise_xor(key_guess, ct))}" }
-puts '[+] End'
-# 
-# [+] Guesses based off ciphertext_6
-# [0] We can factor the number 15 with quantum computers. We can also factor the number 1
-# [1] Euler would probably enjoy that now his theorem becomes a corner stone of crypto - 
-# [2] The nice thing about Keeyloq is now we cryptographers can drive a lot of fancy cars
-# [3] The ciphertext produced by a weak encryption algorithm looks as good as ciphertext 
-# [4] You don't want to buy a set of car keys from a guy who specializes in stealing cars
-# [5] There are two types of cryptography - that which will keep secrets safe from your l
-# [6] There are two types of cyptography: one that allows the Government to use brute for
-# [7] We can see the point where the chip is unhappy if a wrong bit is sent and consumes 
-# [8] A (private-key)  encryption scheme states 3 algorithms, namely a procedure for gene
-# [9]  The Concise OxfordDictionary (2006) deﬁnes crypto as the art of  writing o r sol
-# [+] Secret Message
+  puts '[+] All ciphers based off your guess:'
+  key_guess = Hex.bitwise_xor(Ascii.to_hex(guess), ciphertexts[id.to_i])
+  puts rebased_cts.map.with_index { |ct, i| " [#{i}] #{Hex.to_ascii(Hex.bitwise_xor(key_guess, ct))}" }
 
-# These look correct now output the secret message!
-puts '[+] Secret Message'
-puts '[+] ' + Hex.to_ascii(Hex.bitwise_xor(key_guess, target))
+  puts '[+] Choose characters keep e.g 5:15 or x to exit'
+  input = gets.chomp
+
+  if input == 'x'
+    key = key_guess
+
+    puts '[+] Secret Message'
+    puts '[+] ' + Hex.to_ascii(Hex.bitwise_xor(key, target))
+
+    break
+  else
+    first, last      = input.split(':').map{ |n| n.to_i * 2 }
+    key[first, last] = key_guess[first, last]
+    
+    puts rebased_cts.map.with_index { |ct, i| " [#{i}] #{Hex.to_ascii(Hex.bitwise_xor(key, ct))}" }
+  end
+end
+
 
 
