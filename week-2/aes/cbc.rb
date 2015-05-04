@@ -1,13 +1,11 @@
 require 'openssl'
 
-require_relative '../../hex'
-require_relative '../../ascii'
+require_relative '../aes'
 
 module AES
   module CBC
     module_function
-
-    BLOCK_SIZE_BYTES = 16
+    extend AES
 
     def decrypt(hex_ciphertext, hex_key)
       # Convert to ASCII
@@ -49,8 +47,8 @@ module AES
       encrypter = build_encrypter(k)
       
       # Encrypt block by block
-      # c[0] = E(k, m[0] ⨁ IV)
-      # c[1] = E(k, m[1] ⨁ c[0])
+      # -> c[0] = E(k, m[0] ⨁ IV)
+      # -> c[1] = E(k, m[1] ⨁ c[0])
       # -> .....
       encrypted_blocks = blocks.map do |b|
         b  = Ascii.bitwise_xor(b, iv)
@@ -60,28 +58,6 @@ module AES
 
       # Prepend IV
       hex_iv + Ascii.to_hex(encrypted_blocks.join(''))
-    end
-
-    private_class_method
-
-    def chunk(string, size)
-      string.scan(/.{1,#{size}}/)
-    end
-
-    def build_decrypter(key)
-      build_cipher(:decrypt, key)
-    end
-
-    def build_encrypter(key)
-      build_cipher(:encrypt, key)
-    end
-
-    def build_cipher(type, key)
-      cipher         =  OpenSSL::Cipher::AES128.new(:ECB)
-      cipher.public_send(type)
-      cipher.key     = key
-      cipher.padding = 0
-      cipher
     end
   end
 end

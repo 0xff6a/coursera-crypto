@@ -16,12 +16,11 @@ cbc_c1 =
 "4ca00ff4c898d61e1edbf1800618fb2828a226d160dad07883d04e008a7897ee" +
 "2e4b7465d5290d0c0e6c6822236e1daafb94ffe0c5da05d9476be028ad7c1d81"
 
-cbc_p1 = AES::CBC.decrypt(cbc_c1, cbc_key)
-
 cbc_c2 = 
 "5b68629feb8606f9a6667670b75b38a5b4832d0f26e1ab7da33249de7d4afc48" +
 "e713ac646ace36e872ad5fb8a512428a6e21364b0c374df45503473c5242a253"
 
+cbc_p1 = AES::CBC.decrypt(cbc_c1, cbc_key)
 cbc_p2 = AES::CBC.decrypt(cbc_c2, cbc_key)
 
 puts "[+] CBC Mode\n[+] Decryption:"
@@ -48,6 +47,14 @@ ctr_c2 =
 "770b80259ec33beb2561358a9f2dc617e46218c0a53cbeca695ae45faa8952aa" +
 "0e311bde9d4e01726d3184c34451"
 
-# puts "[+] CTR Mode\nPlaintexts:"
-# puts " [1] #{AES::CTR.decrypt(ctr_c1, ctr_key)}"
-# puts " [2] #{AES::CTR.decrypt(ctr_c2, ctr_key)}"
+ctr_p1 = AES::CTR.decrypt(ctr_c1, ctr_key)
+ctr_p2 = AES::CTR.decrypt(ctr_c2, ctr_key)
+
+puts "[+] CTR Mode\n[+] Decryption:"
+puts " [1] #{ctr_p1}"
+puts " [2] #{ctr_p2}"
+
+check =  AES::CTR.encrypt(ctr_p1, ctr_key, ctr_c1[0,32]) == ctr_c1 &&
+            AES::CTR.encrypt(ctr_p2, ctr_key, ctr_c2[0,32])  == ctr_c2
+
+puts "[+] Encryption: #{check ? 'OK' : 'Error'}"
