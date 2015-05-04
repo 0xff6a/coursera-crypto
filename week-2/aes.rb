@@ -1,5 +1,5 @@
-require_relative '../hex'
-require_relative '../ascii'
+require_relative '../utils/hex'
+require_relative '../utils/ascii'
 
 module AES
   BLOCK_SIZE_BYTES = 16

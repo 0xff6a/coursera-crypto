@@ -1,6 +1,6 @@
-require_relative '../hex'
-require_relative '../ascii'
-require_relative '../bytes'
+require_relative '../utils/hex'
+require_relative '../utils/ascii'
+require_relative '../utils/bytes'
 
 ciphertext_1 =
 '315c4eeaa8b5f8aaf9174145bf43e1784b8fa00dc71d885a804e5ee9fa40b16349c146fb778cdf2d3aff021d' +
