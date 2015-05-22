@@ -1,5 +1,5 @@
-require_relative 'aes/cbc'
-require_relative 'aes/ctr'
+require_relative '../utils/aes/cbc'
+require_relative '../utils/aes/ctr'
 
 # In this project you will implement two encryption/decryption systems, one using AES in CBC 
 # mode and another using AES in counter mode (CTR). In both cases the 16-byte encryption IV is 
