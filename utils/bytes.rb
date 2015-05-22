@@ -23,4 +23,8 @@ module Bytes
       .map(&:chr)
       .join
   end
+
+  def pad(n)
+    (1..n).map { n }
+  end
 end

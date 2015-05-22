@@ -2,13 +2,14 @@
 
 require 'net/http'
 require 'uri'
+require 'pry'
 
 require_relative '../utils/aes'
 require_relative '../utils/hex'
 require_relative '../utils/ascii'
 
 def guesses
-  (0..255).to_a
+  (32..126).to_a
 end
 
 class PaddingOracle
@@ -56,28 +57,47 @@ cipher_text =
 # submit IV’ c[0]
 
 blocks = AES.blocks(cipher_text)
-iv     = blocks.first
-
 #
 # Guess last byte of first block
 #
-# Drop the current padding block
+# Drop the current padding block and IV
 blocks.pop
 
 # Convert to bytes
-bytes_blocks = blocks.map{ |b| Hex.to_bytes(b) }
-bytes_iv     = Hex.to_bytes(iv)
+bytes_blocks   = blocks.map{ |b| Hex.to_bytes(b) }
+original_bytes = blocks.map{ |b| Hex.to_bytes(b) }
 
-require 'pry'; binding.pry
+bytes_known = []
 
-# Try all possible values of last byte
-original_value = bytes_blocks[-2][-1]
+# For each block
+(1..blocks.size).each do |b|
+  b += 1
+  ### TODO
+  ### NEED TO DO THIS BLOCK BY BLOCK NOT IN A ONER
+  ### DROP A BLOCK ONCE IT IS DECODED
 
-guesses.each do |g|
-  bytes_blocks[-2][-1] = original_value ^ g ^ 1
+  # For each byte in the block
+  (1..AES::BLOCK_SIZE_BYTES).each do |n_to_last|
+    original_value = original_bytes[-b][-n_to_last..-1]
 
-  # created modified 2 block ciphertext
-  ct = Bytes.to_hex(bytes_blocks.flatten)
-  #query oracle
-  puts 'Found: ' + g.to_s if  PaddingOracle.new(ct).query?
+    # For each possible byte value
+    guesses.each do |g|
+      bytes_guess = bytes_known.dup.unshift(g)
+      res         = Bytes.xor(original_value, bytes_guess)
+      res         = Bytes.xor(res, Bytes.pad(n_to_last))
+
+      bytes_blocks[-b][-n_to_last..-1] = res
+
+      ct = Bytes.to_hex(bytes_blocks.flatten)
+
+      # Consult the oracle to see if guess is valid
+      if PaddingOracle.new(ct).query? 
+        bytes_known.unshift(g)
+        puts 'Found: ' + g.to_s
+        break
+      end
+    end
+  end
 end
+
+puts Bytes.to_ascii(bytes_known)
