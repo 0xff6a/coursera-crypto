@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby 
-require 'pry'
-
 require_relative '../utils/aes'
 require_relative '../utils/hex'
 require_relative '../utils/ascii'
@@ -15,34 +13,27 @@ possible_byte_values = (2..255).to_a
 blocks               = AES.blocks(cipher_text)
 result               = []
 
-# For each block
 while blocks.size >= 2
-  ### TODO
-  ### NEED TO DO THIS BLOCK BY BLOCK NOT IN A ONER
-  ### DROP A BLOCK ONCE IT IS DECODED
   
-  # Convert to bytes
   original_bytes = blocks.map{ |b| Hex.to_bytes(b) }
   bytes_blocks   = blocks.map{ |b| Hex.to_bytes(b) }
-
-  # For each byte in the block
-  bytes_known = []
+  bytes_known    = []
 
   (1..AES::BLOCK_SIZE_BYTES).each do |n_to_last|
     original_value = original_bytes[-2][-n_to_last..-1]
 
-    # For each possible byte value
     possible_byte_values.each do |v|
       bytes_guess = bytes_known.dup.unshift(v)
-      res         = Bytes.xor(original_value, bytes_guess)
-      res         = Bytes.xor(res, Bytes.pad(n_to_last))
+      
+      bytes_blocks[-2][-n_to_last..-1] =
+        Bytes.xor( 
+          Bytes.xor(original_value, bytes_guess),
+          Bytes.pad(n_to_last)
+        )
 
-      bytes_blocks[-2][-n_to_last..-1] = res
+      cipher_text = Bytes.to_hex(bytes_blocks.flatten)
 
-      ct = Bytes.to_hex(bytes_blocks.flatten)
-
-      # Consult the oracle to see if guess is valid
-      if PaddingOracle.query?(ct)
+      if PaddingOracle.query?(cipher_text)
         puts 'Found: ' + v.to_s
         bytes_known.unshift(v)
         break
@@ -55,6 +46,3 @@ while blocks.size >= 2
 end
 
 puts Bytes.to_ascii(result.reverse.flatten)
-
-
-
