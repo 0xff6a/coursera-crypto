@@ -1,71 +1,5 @@
 #!/usr/bin/env ruby 
-require 'pry'
-require 'bigdecimal'
-require 'bigdecimal/math'
-
-include BigMath
-
-PRECISION = 350
-
-def factorise(n, a)
-  #
-  # Given N = pq and A = (p + q)/2 return factors p,q
-  #
-  # BigDecimal, BigDecimal -> Array[Integer, Integer]
-  #
-  x = (a**2) - n
-  x = x.sqrt(PRECISION)
-
-  p,q = (a - x).to_i, (a + x).to_i
-end
-
-def factorise_1(n)
-  #
-  # Assumes |p − q| < 2N**1/4 thus A − √N < 1
-  #
-  # BigDecimal -> Array[Integer, Integer]
-  #
-  a = n.sqrt(PRECISION).ceil
-  
-  factorise(n, a)
-end
-
-def factorise_2(n)
-  #
-  # Assumes |p − q| < (2**11)*N**1/4 thus A − √N < 2**20
-  #
-  # BigDecimal -> Array[Integer, Integer]
-  #
-  range_start = n.sqrt(PRECISION).ceil
-  range_end   = range_start + 2**20
-
-  (range_start..range_end).each do |a| 
-    p,q = factorise(n, a)
-
-    return [p, q] if (p * q == n)
-
-    puts "#{sprintf('%.2f%%', 100 * (a - range_start)  / (2**20))} complete..." if (a % 10000 == 0)
-  end
-end
-
-def factorise_3(n)
-  #
-  # Assumes |3p − 2q| < N**1/4 thus for B = 3p + 2q , B − 2√(6N) < 1 / 8√6)
-  # See maths.md for derivations
-  #
-  # BigDecimal -> Array[Integer, Integer]
-  #
-  b = ((6*n).sqrt(PRECISION) * 2).ceil
-
-  x = b**2 - 24*n
-  x = x.sqrt(PRECISION)
-
-  p = (b - x) / 6
-  q = (b + x) / 4
-
-  [ p.to_i, q.to_i ]
-end
-
+require_relative 'factoring.rb'
 
 n_1 = 
   BigDecimal(
@@ -94,12 +28,13 @@ n_3 =
     "9276147530748597302192751375739387929"
   )
 
-# puts '[+] Question 1'
-# puts factorise_1(n_1)
+puts '[+] Question 1'
+puts factorise_1(n_1)
 # 13407807929942597099574024998205846127479365820592393377723561443721764030073662768891111614362326998675040546094339320838419523375986027530441562135724301
+# 13407807929942597099574024998205846127479365820592393377723561443721764030073778560980348930557750569660049234002192590823085163940025485114449475265364281
 
-# puts '[+] Question 2'
-# puts factorise_2(n_2)
+puts '[+] Question 2'
+puts factorise_2(n_2)
 # 25464796146996183438008816563973942229341454268524157846328581927885777969985222835143851073249573454107384461557193173304497244814071505790566593206419759
 # 25464796146996183438008816563973942229341454268524157846328581927885777970106398054491246526970814167632563509541784734741871379856682354747718346471375403
 
